@@ -1,0 +1,144 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --foreground-rgb: 0, 0, 0;
+  --background-start-rgb: 214, 219, 220;
+  --background-end-rgb: 255, 255, 255;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --foreground-rgb: 255, 255, 255;
+    --background-start-rgb: 0, 0, 0;
+    --background-end-rgb: 0, 0, 0;
+  }
+}
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 0 0% 3.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 3.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 3.9%;
+    --primary: 0 84% 50%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 45 100% 50%;
+    --secondary-foreground: 0 0% 9%;
+    --muted: 0 0% 96.1%;
+    --muted-foreground: 0 0% 45.1%;
+    --accent: 45 100% 50%;
+    --accent-foreground: 0 0% 9%;
+    --destructive: 0 84% 50%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 89.8%;
+    --input: 0 0% 89.8%;
+    --ring: 0 84% 50%;
+    --chart-1: 0 84% 50%;
+    --chart-2: 45 100% 50%;
+    --chart-3: 0 0% 20%;
+    --chart-4: 120 60% 50%;
+    --chart-5: 240 60% 50%;
+    --radius: 0.5rem;
+    
+    /* San Leo Brand Colors */
+    --sanleo-red: 0 84% 50%;
+    --sanleo-yellow: 45 100% 50%;
+    --sanleo-dark: 0 0% 15%;
+    --sanleo-gray: 0 0% 45%;
+  }
+  .dark {
+    --background: 0 0% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 0 0% 3.9%;
+    --card-foreground: 0 0% 98%;
+    --popover: 0 0% 3.9%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 0 84% 50%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 45 100% 50%;
+    --secondary-foreground: 0 0% 9%;
+    --muted: 0 0% 14.9%;
+    --muted-foreground: 0 0% 63.9%;
+    --accent: 45 100% 50%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 84% 50%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 14.9%;
+    --input: 0 0% 14.9%;
+    --ring: 0 84% 50%;
+    --chart-1: 0 84% 60%;
+    --chart-2: 45 100% 60%;
+    --chart-3: 0 0% 80%;
+    --chart-4: 120 60% 60%;
+    --chart-5: 240 60% 60%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* San Leo Custom Styles */
+.sanleo-gradient {
+  background: linear-gradient(135deg, hsl(var(--sanleo-red)) 0%, hsl(var(--sanleo-yellow)) 100%);
+}
+
+.sanleo-red {
+  color: hsl(var(--sanleo-red));
+}
+
+.sanleo-yellow {
+  color: hsl(var(--sanleo-yellow));
+}
+
+.sanleo-dark {
+  color: hsl(var(--sanleo-dark));
+}
+
+.bg-sanleo-red {
+  background-color: hsl(var(--sanleo-red));
+}
+
+.bg-sanleo-yellow {
+  background-color: hsl(var(--sanleo-yellow));
+}
+
+.bg-sanleo-dark {
+  background-color: hsl(var(--sanleo-dark));
+}
+
+.border-sanleo-red {
+  border-color: hsl(var(--sanleo-red));
+}
+
+.border-sanleo-yellow {
+  border-color: hsl(var(--sanleo-yellow));
+}
+
+.hover\:bg-sanleo-red:hover {
+  background-color: hsl(var(--sanleo-red));
+}
+
+.hover\:bg-sanleo-yellow:hover {
+  background-color: hsl(var(--sanleo-yellow));
+}
+
+/* Traffic Light Animation */
+@keyframes traffic-light {
+  0%, 33% { background-color: hsl(var(--sanleo-red)); }
+  34%, 66% { background-color: hsl(var(--sanleo-yellow)); }
+  67%, 100% { background-color: hsl(120, 60%, 50%); }
+}
+
+.traffic-light {
+  animation: traffic-light 3s infinite;
+}
