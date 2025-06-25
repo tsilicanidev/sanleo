@@ -176,12 +176,7 @@ export function CashflowManager() {
     return selectedServiceData?.basePrice || 0;
   };
 
-  const getCurrentServiceName = () => {
-    if (isCustomService) {
-      return customServiceName || 'Serviço Personalizado';
-    }
-    return selectedServiceData?.name || '';
-  };
+
 
   const generateInstallmentPlan = () => {
     const baseAmount = getCurrentServicePrice();
