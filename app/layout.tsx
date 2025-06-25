@@ -5,7 +5,7 @@ import { Inter } from 'next/font/google';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'San Léo - Soluções em Trânsito',
+  title: 'SanLéo - Soluções em Trânsito',
   description: 'Sistema integrado de gestão para veiculares com controle de clientes, fluxo de caixa e integração WhatsApp',
   desenvolvedor: 'Thiago Silicani',
 };
