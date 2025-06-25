@@ -114,7 +114,7 @@ export default function Dashboard() {
               <div className="relative">
                 <Image
                   src="/image.png"
-                  alt="San Léo Logo"
+                  alt="SanLéo Logo"
                   width={60}
                   height={60}
                   className="object-contain"
