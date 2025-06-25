@@ -299,14 +299,14 @@ export const installmentOperations = {
 
       return {
         id: item.id,
-        client_name: item.services.clients.full_name,
-        client_phone: item.services.clients.phone,
-        service_name: item.services.service_name,
+        client_name: item.services?.clients?.full_name || 'Cliente não encontrado',
+        client_phone: item.services?.clients?.phone || 'Telefone não informado',
+        service_name: item.services?.service_name || 'Serviço não encontrado',
         amount: item.amount,
         due_date: item.due_date,
         days_overdue: daysOverdue,
         installment: item.installment_number,
-        total_installments: item.services.installments
+        total_installments: item.services?.installments || 1
       };
     });
   },
