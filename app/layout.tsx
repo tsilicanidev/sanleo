@@ -7,7 +7,6 @@ const inter = Inter({ subsets: ['latin'] });
 export const metadata: Metadata = {
   title: 'SanLéo - Soluções em Trânsito',
   description: 'Sistema integrado de gestão para veiculares com controle de clientes, fluxo de caixa e integração WhatsApp',
-  desenvolvedor: 'Thiago Silicani',
 };
 
 export default function RootLayout({
