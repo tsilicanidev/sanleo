@@ -144,7 +144,7 @@ export function ServiceCalculator() {
       const serviceData = {
         client_id: selectedClient,
         service_name: serviceName,
-        service_category: selectedServiceData?.category || 'Personalizado',
+        service_category: selectedServiceData?.category || '',
         total_amount: servicePrice,
         installments: installments,
         status: 'active' as const,
@@ -275,7 +275,7 @@ export function ServiceCalculator() {
       'Seguro': 'bg-blue-100 text-blue-800 border-blue-200',
       'Alteração': 'bg-purple-100 text-purple-800 border-purple-200',
       'Habilitação': 'bg-orange-100 text-orange-800 border-orange-200',
-      'Personalizado': 'bg-gray-100 text-gray-800 border-gray-200',
+     
     };
     return colors[category] || 'bg-gray-100 text-gray-800 border-gray-200';
   };
@@ -375,8 +375,8 @@ export function ServiceCalculator() {
                   </div>
                   <div>
                     <h4 className="font-semibold text-gray-800 text-lg">{getCurrentServiceName()}</h4>
-                    <Badge className={getCategoryColor(selectedServiceData?.category || 'Personalizado')}>
-                      {selectedServiceData?.category || 'Personalizado'}
+                    <Badge className={getCategoryColor(selectedServiceData?.category || '')}>
+                      {selectedServiceData?.category || ''}
                     </Badge>
                   </div>
                 </div>
