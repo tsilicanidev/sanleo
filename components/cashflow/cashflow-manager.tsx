@@ -72,8 +72,6 @@ export function CashflowManager() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedClient, setSelectedClient] = useState('');
   const [selectedService, setSelectedService] = useState('');
-  const [customServiceName, setCustomServiceName] = useState('');
-  const [customServicePrice, setCustomServicePrice] = useState('');
   const [installments, setInstallments] = useState(1);
   const [installmentPlan, setInstallmentPlan] = useState<InstallmentPlan[]>([]);
   const [loading, setLoading] = useState(true);
@@ -166,13 +164,13 @@ export function CashflowManager() {
   };
 
   const selectedServiceData = predefinedServices.find(s => s.id === selectedService);
-  const isCustomService = selectedService === 'custom';
 
   const getCurrentServicePrice = () => {
-    if (isCustomService) {
-      return parseFloat(customServicePrice) || 0;
-    }
     return selectedServiceData?.basePrice || 0;
+  };
+
+  const getCurrentServiceName = () => {
+    return selectedServiceData?.name || '';
   };
 
   const generateInstallmentPlan = () => {
@@ -221,7 +219,7 @@ export function CashflowManager() {
       const serviceData = {
         client_id: selectedClient,
         service_name: serviceName,
-        service_category: selectedServiceData?.category || 'AQ',
+        service_category: selectedServiceData?.category || '',
         total_amount: servicePrice,
         installments: installments,
         status: 'active' as const,
@@ -244,8 +242,6 @@ export function CashflowManager() {
       // Reset form
       setSelectedClient('');
       setSelectedService('');
-      setCustomServiceName('');
-      setCustomServicePrice('');
       setInstallments(1);
       setInstallmentPlan([]);
       
@@ -347,11 +343,6 @@ export function CashflowManager() {
   };
 
   const handleDeletePredefinedService = (serviceId: string) => {
-    if (serviceId === 'custom') {
-      toast.error('Não é possível excluir o serviço personalizado padrão');
-      return;
-    }
-
     if (!confirm('Tem certeza que deseja excluir este serviço predefinido?')) {
       return;
     }
@@ -438,7 +429,7 @@ export function CashflowManager() {
 
   const getPaymentMethodInfo = (method?: string) => {
     const paymentMethod = paymentMethods.find(pm => pm.value === method);
-    return paymentMethod || { value: 'pix', label: 'PIX', icon: '💳', color: 'bg-green-100 text-green-800' };
+    return paymentMethod || { value: 'pix', label: 'PIX', icon: '💰', color: 'bg-green-100 text-green-800' };
   };
 
   if (loading) {
@@ -524,11 +515,9 @@ export function CashflowManager() {
                           <SelectItem key={service.id} value={service.id}>
                             <div className="flex justify-between items-center w-full">
                               <span>{service.name}</span>
-                              {service.id !== 'custom' && (
-                                <Badge variant="outline" className={getCategoryColor(service.category)}>
-                                  R$ {service.basePrice.toLocaleString('pt-BR')}
-                                </Badge>
-                              )}
+                              <Badge variant="outline" className={getCategoryColor(service.category)}>
+                                R$ {service.basePrice.toLocaleString('pt-BR')}
+                              </Badge>
                             </div>
                           </SelectItem>
                         ))}
@@ -537,9 +526,8 @@ export function CashflowManager() {
                   </div>
                 </div>
 
-
                 {/* Valor e Parcelamento */}
-                {(selectedServiceData || isCustomService) && getCurrentServicePrice() > 0 && (
+                {selectedServiceData && getCurrentServicePrice() > 0 && (
                   <div className="space-y-6">
                     <div className="flex items-center justify-between p-6 bg-gradient-to-r from-red-50 to-yellow-50 rounded-lg border-2 border-red-200">
                       <div className="flex items-center space-x-4">
@@ -548,8 +536,8 @@ export function CashflowManager() {
                         </div>
                         <div>
                           <h4 className="font-semibold text-gray-800 text-lg">{getCurrentServiceName()}</h4>
-                          <Badge className={getCategoryColor(selectedServiceData?.category || 'Personalizado')}>
-                            {selectedServiceData?.category || 'Personalizado'}
+                          <Badge className={getCategoryColor(selectedServiceData?.category || '')}>
+                            {selectedServiceData?.category || ''}
                           </Badge>
                         </div>
                       </div>
@@ -867,7 +855,7 @@ export function CashflowManager() {
                       
                       <div className="flex items-center justify-between">
                         <div className="text-xl font-bold text-green-600">
-                          {service.id === 'custom' ? 'Variável' : `R$ ${service.basePrice.toLocaleString('pt-BR')}`}
+                          R$ {service.basePrice.toLocaleString('pt-BR')}
                         </div>
                         <div className="flex space-x-1">
                           <Button
@@ -878,7 +866,7 @@ export function CashflowManager() {
                           >
                             <Edit className="w-3 h-3" />
                           </Button>
-                          {service.id !== 'custom' && !service.isCustom && (
+                          {service.isCustom && (
                             <Button
                               variant="outline"
                               size="sm"
@@ -974,7 +962,6 @@ export function CashflowManager() {
                     ...editingPredefinedService,
                     basePrice: parseFloat(e.target.value) || 0
                   })}
-                  disabled={editingPredefinedService.id === 'custom'}
                 />
               </div>
               <div>
