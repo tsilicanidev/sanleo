@@ -19,7 +19,9 @@ import {
   Clock,
   User,
   FileText,
-  Loader2
+  Loader2,
+  ExternalLink,
+  Copy
 } from 'lucide-react';
 import { installmentOperations } from '@/lib/database';
 import type { OverduePayment } from '@/lib/supabase';
@@ -37,6 +39,7 @@ export function OverduePaymentsModal({ isOpen, onClose, overdueCount }: OverdueP
   const [customMessage, setCustomMessage] = useState('');
   const [sentMessages, setSentMessages] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
+  const [sendingBulk, setSendingBulk] = useState(false);
 
   const defaultMessage = `🚨 *COBRANÇA - SAN LÉO SOLUÇÕES EM TRÂNSITO* 🚨
 
@@ -109,6 +112,20 @@ _SanLéo - Soluções em Trânsito_`;
       .replace('{DATA_VENCIMENTO}', new Date(payment.due_date).toLocaleDateString('pt-BR'));
   };
 
+  const copyMessageToClipboard = async (payment: OverduePayment) => {
+    const messageToSend = customMessage || defaultMessage;
+    const formattedMessage = formatMessage(payment, messageToSend);
+    
+    try {
+      await navigator.clipboard.writeText(formattedMessage);
+      toast.success('Mensagem copiada!', {
+        description: 'A mensagem foi copiada para a área de transferência.',
+      });
+    } catch (error) {
+      toast.error('Erro ao copiar mensagem');
+    }
+  };
+
   const sendWhatsAppMessage = async (payment: OverduePayment) => {
     const messageToSend = customMessage || defaultMessage;
     const formattedMessage = formatMessage(payment, messageToSend);
@@ -116,17 +133,57 @@ _SanLéo - Soluções em Trânsito_`;
     const phoneNumber = payment.client_phone.replace(/\D/g, '');
     const whatsappUrl = `https://wa.me/55${phoneNumber}?text=${encodedMessage}`;
     
-    window.open(whatsappUrl, '_blank');
-    setSentMessages(prev => [...prev, payment.id]);
+    // Abrir WhatsApp em nova aba
+    const newWindow = window.open(whatsappUrl, '_blank');
+    
+    if (newWindow) {
+      setSentMessages(prev => [...prev, payment.id]);
+      toast.success('WhatsApp aberto!', {
+        description: `Mensagem preparada para ${payment.client_name}. Clique em "Enviar" no WhatsApp.`,
+        duration: 5000,
+      });
+    } else {
+      toast.error('Erro ao abrir WhatsApp', {
+        description: 'Verifique se o bloqueador de pop-ups está desabilitado.',
+      });
+    }
   };
 
   const sendBulkMessages = async () => {
     const paymentsToSend = overduePayments.filter(p => selectedPayments.includes(p.id));
     
-    for (const payment of paymentsToSend) {
-      await sendWhatsAppMessage(payment);
-      // Delay entre mensagens para evitar spam
-      await new Promise(resolve => setTimeout(resolve, 1000));
+    if (paymentsToSend.length === 0) {
+      toast.error('Selecione pelo menos um pagamento');
+      return;
+    }
+
+    setSendingBulk(true);
+    
+    try {
+      for (let i = 0; i < paymentsToSend.length; i++) {
+        const payment = paymentsToSend[i];
+        
+        // Mostrar progresso
+        toast.info(`Abrindo WhatsApp ${i + 1}/${paymentsToSend.length}`, {
+          description: `Preparando mensagem para ${payment.client_name}`,
+        });
+        
+        await sendWhatsAppMessage(payment);
+        
+        // Delay entre aberturas para não sobrecarregar o navegador
+        if (i < paymentsToSend.length - 1) {
+          await new Promise(resolve => setTimeout(resolve, 2000));
+        }
+      }
+      
+      toast.success('Todas as mensagens foram preparadas!', {
+        description: 'Verifique as abas do WhatsApp e envie as mensagens.',
+        duration: 8000,
+      });
+    } catch (error) {
+      toast.error('Erro ao processar mensagens em lote');
+    } finally {
+      setSendingBulk(false);
     }
   };
 
@@ -182,6 +239,24 @@ _SanLéo - Soluções em Trânsito_`;
 
             {overduePayments.length > 0 && (
               <>
+                {/* Aviso sobre envio automático */}
+                <Card className="border-l-4 border-l-blue-500 shadow-lg mb-6">
+                  <CardContent className="p-4">
+                    <div className="flex items-start space-x-3">
+                      <ExternalLink className="w-5 h-5 text-blue-600 mt-0.5" />
+                      <div className="text-sm text-blue-800">
+                        <p className="font-medium mb-1">ℹ️ Como funciona o envio:</p>
+                        <ul className="list-disc list-inside space-y-1 text-blue-700">
+                          <li>O WhatsApp será aberto automaticamente com a mensagem preenchida</li>
+                          <li>Você precisará clicar em "Enviar" no WhatsApp para cada mensagem</li>
+                          <li>Para envio em lote, várias abas do WhatsApp serão abertas sequencialmente</li>
+                          <li>Use a opção "Copiar" para colar a mensagem manualmente se preferir</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
                 {/* Controles de Seleção */}
                 <div className="flex flex-wrap items-center justify-between gap-4 mb-6 p-4 bg-gray-50 rounded-lg border-2 border-gray-200">
                   <div className="flex items-center space-x-4">
@@ -200,10 +275,20 @@ _SanLéo - Soluções em Trânsito_`;
                   {selectedPayments.length > 0 && (
                     <Button
                       onClick={sendBulkMessages}
+                      disabled={sendingBulk}
                       className="sanleo-gradient text-white hover:opacity-90 shadow-lg"
                     >
-                      <MessageCircle className="w-4 h-4 mr-2" />
-                      Enviar para Selecionados ({selectedPayments.length})
+                      {sendingBulk ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          Enviando...
+                        </>
+                      ) : (
+                        <>
+                          <MessageCircle className="w-4 h-4 mr-2" />
+                          Enviar para Selecionados ({selectedPayments.length})
+                        </>
+                      )}
                     </Button>
                   )}
                 </div>
@@ -297,14 +382,26 @@ _SanLéo - Soluções em Trânsito_`;
                                   Enviado
                                 </Badge>
                               ) : (
-                                <Button
-                                  onClick={() => sendWhatsAppMessage(payment)}
-                                  size="sm"
-                                  className="bg-green-600 hover:bg-green-700 text-white shadow-md"
-                                >
-                                  <Send className="w-4 h-4 mr-2" />
-                                  Enviar WhatsApp
-                                </Button>
+                                <>
+                                  <Button
+                                    onClick={() => copyMessageToClipboard(payment)}
+                                    size="sm"
+                                    variant="outline"
+                                    className="border-blue-300 text-blue-600 hover:bg-blue-50"
+                                    title="Copiar mensagem"
+                                  >
+                                    <Copy className="w-4 h-4 mr-1" />
+                                    Copiar
+                                  </Button>
+                                  <Button
+                                    onClick={() => sendWhatsAppMessage(payment)}
+                                    size="sm"
+                                    className="bg-green-600 hover:bg-green-700 text-white shadow-md"
+                                  >
+                                    <Send className="w-4 h-4 mr-2" />
+                                    Enviar WhatsApp
+                                  </Button>
+                                </>
                               )}
                             </div>
                           </div>
