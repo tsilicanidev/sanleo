@@ -415,7 +415,7 @@ export function CashflowManager() {
       'Alteração': 'bg-purple-100 text-purple-800 border-purple-200',
       'Habilitação': 'bg-orange-100 text-orange-800 border-orange-200',
       'Infrações': 'bg-pink-100 text-pink-800 border-pink-200',
-      'Personalizado': 'bg-gray-100 text-gray-800 border-gray-200',
+
     };
     return colors[category] || 'bg-gray-100 text-gray-800 border-gray-200';
   };
