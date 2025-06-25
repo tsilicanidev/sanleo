@@ -84,8 +84,16 @@ export function ClientList({ onNewClient }: ClientListProps) {
     return cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
   };
 
+  const formatZipCode = (zipCode: string) => {
+    return zipCode.replace(/(\d{5})(\d{3})/, '$1-$2');
+  };
+
   const getInitials = (name: string) => {
     return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+  };
+
+  const getFullAddress = (client: ClientWithDocuments) => {
+    return `${client.street}, ${client.number} - ${client.neighborhood}, ${client.city}/${client.state} - CEP: ${formatZipCode(client.zip_code)}`;
   };
 
   const handleEditClient = (clientId: string) => {
@@ -267,7 +275,9 @@ export function ClientList({ onNewClient }: ClientListProps) {
                     <MapPin className="w-4 h-4 text-gray-500 mt-1" />
                     <div>
                       <p className="text-gray-500">Endereço</p>
-                      <p className="font-medium text-gray-800 leading-relaxed">{client.address}</p>
+                      <p className="font-medium text-gray-800 leading-relaxed">
+                        {getFullAddress(client)}
+                      </p>
                     </div>
                   </div>
                 </div>

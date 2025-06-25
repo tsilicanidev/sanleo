@@ -19,7 +19,12 @@ export interface Client {
   full_name: string;
   rg: string;
   cpf: string;
-  address: string;
+  street: string;
+  number: string;
+  neighborhood: string;
+  city: string;
+  state: string;
+  zip_code: string;
   phone: string;
   email: string;
   created_at: string;

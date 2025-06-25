@@ -9,8 +9,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { Upload, User, FileText, Shield, CheckCircle, AlertCircle } from 'lucide-react';
+import { Upload, User, FileText, Shield, CheckCircle, AlertCircle, MapPin } from 'lucide-react';
 import { clientOperations, documentOperations } from '@/lib/database';
 
 // Validação de CPF
@@ -45,7 +46,12 @@ const clientSchema = z.object({
   fullName: z.string().min(2, 'Nome deve ter pelo menos 2 caracteres'),
   rg: z.string().min(7, 'RG deve ter pelo menos 7 caracteres'),
   cpf: z.string().refine(validateCPF, 'CPF inválido'),
-  address: z.string().min(10, 'Endereço deve ser completo'),
+  street: z.string().min(5, 'Logradouro deve ser informado'),
+  number: z.string().min(1, 'Número deve ser informado'),
+  neighborhood: z.string().min(2, 'Bairro deve ser informado'),
+  city: z.string().min(2, 'Cidade deve ser informada'),
+  state: z.string().min(2, 'Estado deve ser informado'),
+  zipCode: z.string().min(8, 'CEP deve ter 8 dígitos').max(9, 'CEP inválido'),
   phone: z.string().min(10, 'Telefone deve ser válido'),
   email: z.string().email('Email deve ser válido'),
 });
@@ -55,6 +61,37 @@ type ClientFormData = z.infer<typeof clientSchema>;
 interface ClientFormProps {
   onSuccess?: () => void;
 }
+
+// Estados brasileiros
+const brazilianStates = [
+  { value: 'AC', label: 'Acre' },
+  { value: 'AL', label: 'Alagoas' },
+  { value: 'AP', label: 'Amapá' },
+  { value: 'AM', label: 'Amazonas' },
+  { value: 'BA', label: 'Bahia' },
+  { value: 'CE', label: 'Ceará' },
+  { value: 'DF', label: 'Distrito Federal' },
+  { value: 'ES', label: 'Espírito Santo' },
+  { value: 'GO', label: 'Goiás' },
+  { value: 'MA', label: 'Maranhão' },
+  { value: 'MT', label: 'Mato Grosso' },
+  { value: 'MS', label: 'Mato Grosso do Sul' },
+  { value: 'MG', label: 'Minas Gerais' },
+  { value: 'PA', label: 'Pará' },
+  { value: 'PB', label: 'Paraíba' },
+  { value: 'PR', label: 'Paraná' },
+  { value: 'PE', label: 'Pernambuco' },
+  { value: 'PI', label: 'Piauí' },
+  { value: 'RJ', label: 'Rio de Janeiro' },
+  { value: 'RN', label: 'Rio Grande do Norte' },
+  { value: 'RS', label: 'Rio Grande do Sul' },
+  { value: 'RO', label: 'Rondônia' },
+  { value: 'RR', label: 'Roraima' },
+  { value: 'SC', label: 'Santa Catarina' },
+  { value: 'SP', label: 'São Paulo' },
+  { value: 'SE', label: 'Sergipe' },
+  { value: 'TO', label: 'Tocantins' },
+];
 
 export function ClientForm({ onSuccess }: ClientFormProps) {
   const [documents, setDocuments] = useState<{
@@ -70,7 +107,12 @@ export function ClientForm({ onSuccess }: ClientFormProps) {
       fullName: '',
       rg: '',
       cpf: '',
-      address: '',
+      street: '',
+      number: '',
+      neighborhood: '',
+      city: '',
+      state: '',
+      zipCode: '',
       phone: '',
       email: '',
     },
@@ -85,7 +127,12 @@ export function ClientForm({ onSuccess }: ClientFormProps) {
         full_name: data.fullName,
         rg: data.rg,
         cpf: data.cpf.replace(/[^\d]/g, ''), // Store CPF without formatting
-        address: data.address,
+        street: data.street,
+        number: data.number,
+        neighborhood: data.neighborhood,
+        city: data.city,
+        state: data.state,
+        zip_code: data.zipCode.replace(/[^\d]/g, ''), // Store ZIP without formatting
         phone: data.phone,
         email: data.email,
       });
@@ -189,8 +236,15 @@ export function ClientForm({ onSuccess }: ClientFormProps) {
       .replace(/(-\d{1})\d+?$/, '$1');
   };
 
+  const formatZipCode = (value: string) => {
+    return value
+      .replace(/\D/g, '')
+      .replace(/(\d{5})(\d)/, '$1-$2')
+      .replace(/(-\d{3})\d+?$/, '$1');
+  };
+
   return (
-    <Card className="max-w-4xl mx-auto shadow-xl border-t-4 border-t-red-500">
+    <Card className="max-w-6xl mx-auto shadow-xl border-t-4 border-t-red-500">
       <CardHeader className="bg-gradient-to-r from-red-50 to-yellow-50">
         <CardTitle className="flex items-center space-x-2">
           <div className="p-2 bg-red-100 rounded-full">
@@ -272,24 +326,6 @@ export function ClientForm({ onSuccess }: ClientFormProps) {
                 />
               </div>
 
-              <FormField
-                control={form.control}
-                name="address"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-gray-700 font-medium">Endereço Completo *</FormLabel>
-                    <FormControl>
-                      <Input 
-                        placeholder="Rua, número, bairro, cidade, CEP" 
-                        className="border-2 border-gray-200 focus:border-red-400 focus:ring-red-200" 
-                        {...field} 
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <FormField
                   control={form.control}
@@ -332,10 +368,143 @@ export function ClientForm({ onSuccess }: ClientFormProps) {
               </div>
             </div>
 
-            {/* Upload de Documentos */}
+            {/* Endereço */}
             <div className="space-y-6">
               <div className="flex items-center space-x-2 pb-2 border-b-2 border-yellow-200">
-                <FileText className="w-5 h-5 text-yellow-600" />
+                <MapPin className="w-5 h-5 text-yellow-600" />
+                <h3 className="text-lg font-semibold text-gray-800">Endereço</h3>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="md:col-span-2">
+                  <FormField
+                    control={form.control}
+                    name="street"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-gray-700 font-medium">Logradouro *</FormLabel>
+                        <FormControl>
+                          <Input 
+                            placeholder="Rua, Avenida, Travessa..." 
+                            className="border-2 border-gray-200 focus:border-yellow-400 focus:ring-yellow-200" 
+                            {...field} 
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <FormField
+                  control={form.control}
+                  name="number"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-gray-700 font-medium">Número *</FormLabel>
+                      <FormControl>
+                        <Input 
+                          placeholder="123" 
+                          className="border-2 border-gray-200 focus:border-yellow-400 focus:ring-yellow-200" 
+                          {...field} 
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <FormField
+                  control={form.control}
+                  name="neighborhood"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-gray-700 font-medium">Bairro *</FormLabel>
+                      <FormControl>
+                        <Input 
+                          placeholder="Nome do bairro" 
+                          className="border-2 border-gray-200 focus:border-yellow-400 focus:ring-yellow-200" 
+                          {...field} 
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="zipCode"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-gray-700 font-medium">CEP *</FormLabel>
+                      <FormControl>
+                        <Input 
+                          placeholder="00000-000" 
+                          className="border-2 border-gray-200 focus:border-yellow-400 focus:ring-yellow-200" 
+                          {...field}
+                          onChange={(e) => field.onChange(formatZipCode(e.target.value))}
+                          maxLength={9}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <FormField
+                  control={form.control}
+                  name="city"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-gray-700 font-medium">Cidade *</FormLabel>
+                      <FormControl>
+                        <Input 
+                          placeholder="Nome da cidade" 
+                          className="border-2 border-gray-200 focus:border-yellow-400 focus:ring-yellow-200" 
+                          {...field} 
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="state"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-gray-700 font-medium">Estado *</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger className="border-2 border-gray-200 focus:border-yellow-400">
+                            <SelectValue placeholder="Selecione o estado" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {brazilianStates.map((state) => (
+                            <SelectItem key={state.value} value={state.value}>
+                              {state.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </div>
+
+            {/* Upload de Documentos */}
+            <div className="space-y-6">
+              <div className="flex items-center space-x-2 pb-2 border-b-2 border-blue-200">
+                <FileText className="w-5 h-5 text-blue-600" />
                 <h3 className="text-lg font-semibold text-gray-800">Documentos</h3>
               </div>
               

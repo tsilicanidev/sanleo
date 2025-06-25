@@ -33,7 +33,12 @@ export const clientSchema = z.object({
   fullName: z.string().min(2, 'Nome deve ter pelo menos 2 caracteres'),
   rg: z.string().min(7, 'RG deve ter pelo menos 7 caracteres'),
   cpf: z.string().refine(validateCPF, 'CPF inválido'),
-  address: z.string().min(10, 'Endereço deve ser completo'),
+  street: z.string().min(5, 'Logradouro deve ser informado'),
+  number: z.string().min(1, 'Número deve ser informado'),
+  neighborhood: z.string().min(2, 'Bairro deve ser informado'),
+  city: z.string().min(2, 'Cidade deve ser informada'),
+  state: z.string().min(2, 'Estado deve ser informado'),
+  zipCode: z.string().min(8, 'CEP deve ter 8 dígitos').max(9, 'CEP inválido'),
   phone: z.string().min(10, 'Telefone deve ser válido'),
   email: z.string().email('Email deve ser válido'),
 });
@@ -64,6 +69,13 @@ export const formatPhone = (value: string): string => {
     .replace(/(\d{4})(\d)/, '$1-$2')
     .replace(/(\d{4})-(\d)(\d{4})/, '$1$2-$3')
     .replace(/(-\d{4})\d+?$/, '$1');
+};
+
+export const formatZipCode = (value: string): string => {
+  return value
+    .replace(/\D/g, '')
+    .replace(/(\d{5})(\d)/, '$1-$2')
+    .replace(/(-\d{3})\d+?$/, '$1');
 };
 
 export const formatCurrency = (value: number): string => {
