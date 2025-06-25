@@ -97,11 +97,10 @@ export function CashflowManager() {
     { id: '8', name: 'Segunda Via CNH', basePrice: 180, category: 'Habilitação' },
     { id: '9', name: 'Multa de Trânsito', basePrice: 250, category: 'Infrações' },
     { id: '10', name: 'Recurso de Multa', basePrice: 150, category: 'Infrações' },
-    { id: 'custom', name: 'Serviço Personalizado', basePrice: 0, category: 'Personalizado' },
-  ];
+     ];
 
   const paymentMethods = [
-    { value: 'pix', label: 'PIX', icon: '💳', color: 'bg-green-100 text-green-800' },
+    { value: 'pix', label: 'PIX', icon: '💰', color: 'bg-green-100 text-green-800' },
     { value: 'debit', label: 'Débito', icon: '💳', color: 'bg-blue-100 text-blue-800' },
     { value: 'credit', label: 'Crédito', icon: '💳', color: 'bg-purple-100 text-purple-800' },
     { value: 'cash', label: 'Dinheiro', icon: '💰', color: 'bg-yellow-100 text-yellow-800' },
