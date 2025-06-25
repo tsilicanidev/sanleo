@@ -544,7 +544,7 @@ export function CashflowManager() {
                         <div>
                           <h4 className="font-semibold text-gray-800 text-lg">{getCurrentServiceName()}</h4>
                           <Badge className={getCategoryColor(selectedServiceData?.category || '')}>
-                            {selectedServiceData?.category || 'Personalizado'}
+                            {selectedServiceData?.category || ''}
                           </Badge>
                         </div>
                       </div>
