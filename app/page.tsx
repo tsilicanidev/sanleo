@@ -115,8 +115,8 @@ export default function Dashboard() {
                 <Image
                   src="/image.png"
                   alt="SanLéo Logo"
-                  width={70}
-                  height={70}
+                  width={80}
+                  height={80}
                   className="object-contain"
                   priority
                 />
