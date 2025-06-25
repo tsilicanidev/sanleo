@@ -482,7 +482,7 @@ export function CashflowManager() {
                 className="data-[state=active]:bg-red-500 data-[state=active]:text-white"
               >
                 <Plus className="w-4 h-4 mr-2" />
-                Novo Serviço
+                Novo Serviço1
               </TabsTrigger>
               <TabsTrigger 
                 value="manage-services"
