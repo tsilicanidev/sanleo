@@ -44,7 +44,7 @@
     --chart-5: 240 60% 50%;
     --radius: 0.5rem;
     
-    /* San Léo Brand Colors */
+    /* SanLéo Brand Colors */
     --sanleo-red: 0 84% 50%;
     --sanleo-yellow: 45 100% 50%;
     --sanleo-dark: 0 0% 15%;
@@ -87,7 +87,7 @@
   }
 }
 
-/* San Léo Custom Styles */
+/* SanLéo Custom Styles */
 .sanleo-gradient {
   background: linear-gradient(135deg, hsl(var(--sanleo-red)) 0%, hsl(var(--sanleo-yellow)) 100%);
 }
