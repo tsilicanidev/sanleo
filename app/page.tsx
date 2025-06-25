@@ -123,7 +123,7 @@ export default function Dashboard() {
               </div>
               <div className="hidden sm:block">
                 <h1 className="text-2xl font-bold sanleo-red">
-                  San Leo
+                  San Léo
                 </h1>
                 <p className="text-sm sanleo-yellow font-medium">
                   Soluções em Trânsito
