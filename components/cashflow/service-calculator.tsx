@@ -41,8 +41,6 @@ export function ServiceCalculator() {
   const [services, setServices] = useState<ServiceWithInstallments[]>([]);
   const [selectedClient, setSelectedClient] = useState('');
   const [selectedService, setSelectedService] = useState('');
-  const [customServiceName, setCustomServiceName] = useState('');
-  const [customServicePrice, setCustomServicePrice] = useState('');
   const [installments, setInstallments] = useState(1);
   const [installmentPlan, setInstallmentPlan] = useState<InstallmentPlan[]>([]);
   const [loading, setLoading] = useState(true);
@@ -60,7 +58,6 @@ export function ServiceCalculator() {
     { id: '4', name: 'DPVAT', basePrice: 156, category: 'Seguro' },
     { id: '5', name: 'Mudança de Categoria', basePrice: 320, category: 'Alteração' },
     { id: '6', name: 'CNH Digital', basePrice: 280, category: 'Habilitação' },
-    
   ];
 
   const paymentMethods = [
@@ -92,15 +89,14 @@ export function ServiceCalculator() {
   };
 
   const selectedServiceData = predefinedServices.find(s => s.id === selectedService);
-  const isCustomService = selectedService === 'custom';
 
   const getCurrentServicePrice = () => {
-    if (isCustomService) {
-      return parseFloat(customServicePrice) || 0;
-    }
     return selectedServiceData?.basePrice || 0;
   };
 
+  const getCurrentServiceName = () => {
+    return selectedServiceData?.name || '';
+  };
 
   const generateInstallmentPlan = () => {
     const baseAmount = getCurrentServicePrice();
@@ -167,8 +163,6 @@ export function ServiceCalculator() {
       // Reset form
       setSelectedClient('');
       setSelectedService('');
-      setCustomServiceName('');
-      setCustomServicePrice('');
       setInstallments(1);
       setInstallmentPlan([]);
       
@@ -275,7 +269,6 @@ export function ServiceCalculator() {
       'Seguro': 'bg-blue-100 text-blue-800 border-blue-200',
       'Alteração': 'bg-purple-100 text-purple-800 border-purple-200',
       'Habilitação': 'bg-orange-100 text-orange-800 border-orange-200',
-     
     };
     return colors[category] || 'bg-gray-100 text-gray-800 border-gray-200';
   };
@@ -291,7 +284,7 @@ export function ServiceCalculator() {
 
   const getPaymentMethodLabel = (method?: string) => {
     const paymentMethod = paymentMethods.find(pm => pm.value === method);
-    return paymentMethod ? `${paymentMethod.icon} ${paymentMethod.label}` : '💳 PIX';
+    return paymentMethod ? `${paymentMethod.icon} ${paymentMethod.label}` : '💰 PIX';
   };
 
   if (loading) {
@@ -350,11 +343,9 @@ export function ServiceCalculator() {
                     <SelectItem key={service.id} value={service.id}>
                       <div className="flex justify-between items-center w-full">
                         <span>{service.name}</span>
-                        {service.id !== 'custom' && (
-                          <Badge variant="outline" className={getCategoryColor(service.category)}>
-                            R$ {service.basePrice.toLocaleString('pt-BR')}
-                          </Badge>
-                        )}
+                        <Badge variant="outline" className={getCategoryColor(service.category)}>
+                          R$ {service.basePrice.toLocaleString('pt-BR')}
+                        </Badge>
                       </div>
                     </SelectItem>
                   ))}
@@ -363,10 +354,8 @@ export function ServiceCalculator() {
             </div>
           </div>
 
-      
-
           {/* Valor e Parcelamento */}
-          {(selectedServiceData || isCustomService) && getCurrentServicePrice() > 0 && (
+          {selectedServiceData && getCurrentServicePrice() > 0 && (
             <div className="space-y-6">
               <div className="flex items-center justify-between p-6 bg-gradient-to-r from-red-50 to-yellow-50 rounded-lg border-2 border-red-200">
                 <div className="flex items-center space-x-4">
