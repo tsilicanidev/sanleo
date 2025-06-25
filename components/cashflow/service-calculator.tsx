@@ -64,7 +64,7 @@ export function ServiceCalculator() {
   ];
 
   const paymentMethods = [
-    { value: 'pix', label: 'PIX', icon: '💳' },
+    { value: 'pix', label: 'PIX', icon: '💰' },
     { value: 'debit', label: 'Débito', icon: '💳' },
     { value: 'credit', label: 'Crédito', icon: '💳' },
     { value: 'cash', label: 'Dinheiro', icon: '💰' },
