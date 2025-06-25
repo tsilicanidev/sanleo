@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ReceiptGenerator } from './receipt-generator';
 import { 
   Calculator, 
   Calendar, 
@@ -26,7 +27,8 @@ import {
   User,
   Search,
   Settings,
-  X
+  X,
+  Receipt
 } from 'lucide-react';
 import { clientOperations, serviceOperations, installmentOperations } from '@/lib/database';
 import type { Client, ServiceWithInstallments } from '@/lib/supabase';
@@ -85,6 +87,9 @@ export function CashflowManager() {
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showInstallmentDialog, setShowInstallmentDialog] = useState(false);
   const [showPredefinedServiceDialog, setShowPredefinedServiceDialog] = useState(false);
+  const [showReceiptGenerator, setShowReceiptGenerator] = useState(false);
+  const [selectedServiceForReceipt, setSelectedServiceForReceipt] = useState<ServiceWithInstallments | null>(null);
+  const [selectedInstallmentForReceipt, setSelectedInstallmentForReceipt] = useState<string | undefined>(undefined);
 
   // Serviços predefinidos iniciais
   const initialPredefinedServices: Service[] = [
@@ -448,6 +453,18 @@ export function CashflowManager() {
     }
   };
 
+  const handleGenerateReceipt = (service: ServiceWithInstallments, installmentId?: string) => {
+    setSelectedServiceForReceipt(service);
+    setSelectedInstallmentForReceipt(installmentId);
+    setShowReceiptGenerator(true);
+  };
+
+  const handleCloseReceiptGenerator = () => {
+    setShowReceiptGenerator(false);
+    setSelectedServiceForReceipt(null);
+    setSelectedInstallmentForReceipt(undefined);
+  };
+
   const getCategoryColor = (category: string) => {
     const colors: { [key: string]: string } = {
       'Licenciamento': 'bg-red-100 text-red-800 border-red-200',
@@ -678,6 +695,15 @@ export function CashflowManager() {
                               <Button
                                 variant="outline"
                                 size="sm"
+                                onClick={() => handleGenerateReceipt(service)}
+                                className="border-green-300 text-green-600 hover:bg-green-50"
+                                title="Gerar recibo"
+                              >
+                                <Receipt className="w-4 h-4" />
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
                                 onClick={() => handleEditService(service)}
                                 className="border-blue-300 text-blue-600 hover:bg-blue-50"
                               >
@@ -729,6 +755,17 @@ export function CashflowManager() {
                                     R$ {installment.amount.toLocaleString('pt-BR')}
                                   </span>
                                   <div className="flex space-x-1">
+                                    {installment.status === 'paid' && (
+                                      <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => handleGenerateReceipt(service, installment.id)}
+                                        className="border-green-300 text-green-600 hover:bg-green-50"
+                                        title="Gerar recibo desta parcela"
+                                      >
+                                        <Receipt className="w-3 h-3" />
+                                      </Button>
+                                    )}
                                     <Button
                                       variant="outline"
                                       size="sm"
@@ -1156,6 +1193,14 @@ export function CashflowManager() {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Gerador de Recibo */}
+      <ReceiptGenerator
+        isOpen={showReceiptGenerator}
+        onClose={handleCloseReceiptGenerator}
+        service={selectedServiceForReceipt}
+        installmentId={selectedInstallmentForReceipt}
+      />
     </div>
   );
 }
