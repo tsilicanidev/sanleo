@@ -24,7 +24,8 @@ import {
   Clock,
   AlertTriangle,
   User,
-  Search
+  Search,
+  Settings
 } from 'lucide-react';
 import { clientOperations, serviceOperations, installmentOperations } from '@/lib/database';
 import type { Client, ServiceWithInstallments } from '@/lib/supabase';
@@ -35,6 +36,7 @@ interface Service {
   name: string;
   basePrice: number;
   category: string;
+  isCustom?: boolean;
 }
 
 interface InstallmentPlan {
@@ -53,10 +55,19 @@ interface EditingInstallment {
   status: 'pending' | 'paid' | 'overdue';
 }
 
+interface EditingService {
+  id: string;
+  name: string;
+  basePrice: number;
+  category: string;
+  isCustom?: boolean;
+}
+
 export function CashflowManager() {
   const [activeTab, setActiveTab] = useState('new-service');
   const [clients, setClients] = useState<Client[]>([]);
   const [services, setServices] = useState<ServiceWithInstallments[]>([]);
+  const [predefinedServices, setPredefinedServices] = useState<Service[]>([]);
   const [filteredServices, setFilteredServices] = useState<ServiceWithInstallments[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedClient, setSelectedClient] = useState('');
@@ -69,11 +80,13 @@ export function CashflowManager() {
   const [submitting, setSubmitting] = useState(false);
   const [editingService, setEditingService] = useState<ServiceWithInstallments | null>(null);
   const [editingInstallment, setEditingInstallment] = useState<EditingInstallment | null>(null);
+  const [editingPredefinedService, setEditingPredefinedService] = useState<EditingService | null>(null);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showInstallmentDialog, setShowInstallmentDialog] = useState(false);
+  const [showPredefinedServiceDialog, setShowPredefinedServiceDialog] = useState(false);
 
-  // Predefined services
-  const predefinedServices: Service[] = [
+  // Serviços predefinidos iniciais
+  const initialPredefinedServices: Service[] = [
     { id: '1', name: 'Licenciamento Anual', basePrice: 450, category: 'Licenciamento' },
     { id: '2', name: 'Transferência de Veículo', basePrice: 890, category: 'Transferência' },
     { id: '3', name: 'IPVA', basePrice: 1200, category: 'Tributário' },
@@ -96,6 +109,7 @@ export function CashflowManager() {
 
   useEffect(() => {
     loadData();
+    loadPredefinedServices();
   }, []);
 
   useEffect(() => {
@@ -117,6 +131,25 @@ export function CashflowManager() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const loadPredefinedServices = () => {
+    // Carrega serviços predefinidos do localStorage ou usa os iniciais
+    const saved = localStorage.getItem('predefinedServices');
+    if (saved) {
+      try {
+        setPredefinedServices(JSON.parse(saved));
+      } catch {
+        setPredefinedServices(initialPredefinedServices);
+      }
+    } else {
+      setPredefinedServices(initialPredefinedServices);
+    }
+  };
+
+  const savePredefinedServices = (services: Service[]) => {
+    localStorage.setItem('predefinedServices', JSON.stringify(services));
+    setPredefinedServices(services);
   };
 
   const filterServices = () => {
@@ -152,7 +185,10 @@ export function CashflowManager() {
 
   const generateInstallmentPlan = () => {
     const baseAmount = getCurrentServicePrice();
-    if (!baseAmount || installments < 1) return;
+    if (!baseAmount || installments < 1) {
+      toast.error('Informe um valor válido para o serviço');
+      return;
+    }
 
     const installmentAmount = baseAmount / installments;
     const plan: InstallmentPlan[] = [];
@@ -170,6 +206,7 @@ export function CashflowManager() {
     }
 
     setInstallmentPlan(plan);
+    toast.success('Plano de parcelamento gerado!');
   };
 
   const handleCreateService = async () => {
@@ -270,6 +307,66 @@ export function CashflowManager() {
       console.error('Erro ao excluir serviço:', error);
       toast.error('Erro ao excluir serviço');
     }
+  };
+
+  const handleEditPredefinedService = (service: Service) => {
+    setEditingPredefinedService({
+      id: service.id,
+      name: service.name,
+      basePrice: service.basePrice,
+      category: service.category,
+      isCustom: service.isCustom
+    });
+    setShowPredefinedServiceDialog(true);
+  };
+
+  const handleUpdatePredefinedService = () => {
+    if (!editingPredefinedService) return;
+
+    const updatedServices = predefinedServices.map(service => 
+      service.id === editingPredefinedService.id 
+        ? {
+            ...service,
+            name: editingPredefinedService.name,
+            basePrice: editingPredefinedService.basePrice,
+            category: editingPredefinedService.category
+          }
+        : service
+    );
+
+    savePredefinedServices(updatedServices);
+    toast.success('Serviço predefinido atualizado!');
+    setShowPredefinedServiceDialog(false);
+    setEditingPredefinedService(null);
+  };
+
+  const handleAddNewPredefinedService = () => {
+    const newService: Service = {
+      id: `custom_${Date.now()}`,
+      name: 'Novo Serviço',
+      basePrice: 100,
+      category: 'Personalizado',
+      isCustom: true
+    };
+
+    const updatedServices = [...predefinedServices, newService];
+    savePredefinedServices(updatedServices);
+    handleEditPredefinedService(newService);
+  };
+
+  const handleDeletePredefinedService = (serviceId: string) => {
+    if (serviceId === 'custom') {
+      toast.error('Não é possível excluir o serviço personalizado padrão');
+      return;
+    }
+
+    if (!confirm('Tem certeza que deseja excluir este serviço predefinido?')) {
+      return;
+    }
+
+    const updatedServices = predefinedServices.filter(service => service.id !== serviceId);
+    savePredefinedServices(updatedServices);
+    toast.success('Serviço predefinido excluído!');
   };
 
   const handleEditInstallment = (installment: any) => {
@@ -379,7 +476,7 @@ export function CashflowManager() {
         </CardHeader>
         <CardContent className="p-6">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-            <TabsList className="grid w-full grid-cols-2 bg-gray-100">
+            <TabsList className="grid w-full grid-cols-3 bg-gray-100">
               <TabsTrigger 
                 value="new-service"
                 className="data-[state=active]:bg-red-500 data-[state=active]:text-white"
@@ -392,7 +489,14 @@ export function CashflowManager() {
                 className="data-[state=active]:bg-blue-500 data-[state=active]:text-white"
               >
                 <FileText className="w-4 h-4 mr-2" />
-                Gerenciar Serviços ({services.length})
+                Serviços Cadastrados ({services.length})
+              </TabsTrigger>
+              <TabsTrigger 
+                value="predefined-services"
+                className="data-[state=active]:bg-green-500 data-[state=active]:text-white"
+              >
+                <Settings className="w-4 h-4 mr-2" />
+                Gerenciar Serviços ({predefinedServices.length})
               </TabsTrigger>
             </TabsList>
 
@@ -760,11 +864,76 @@ export function CashflowManager() {
                 </div>
               )}
             </TabsContent>
+
+            <TabsContent value="predefined-services" className="space-y-6">
+              {/* Header com botão para adicionar */}
+              <div className="flex justify-between items-center">
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-800">Serviços Predefinidos</h3>
+                  <p className="text-gray-600">Gerencie os serviços disponíveis para seleção</p>
+                </div>
+                <Button 
+                  onClick={handleAddNewPredefinedService}
+                  className="bg-green-500 hover:bg-green-600 text-white shadow-lg"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Novo Serviço
+                </Button>
+              </div>
+
+              {/* Lista de Serviços Predefinidos */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {predefinedServices.map((service) => (
+                  <Card key={service.id} className="border-2 border-gray-200 hover:border-green-300 hover:bg-green-50 transition-all duration-200">
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between mb-3">
+                        <Badge className={getCategoryColor(service.category)}>
+                          {service.category}
+                        </Badge>
+                        {service.isCustom && (
+                          <Badge variant="outline" className="bg-blue-100 text-blue-800 border-blue-300">
+                            Personalizado
+                          </Badge>
+                        )}
+                      </div>
+                      
+                      <h4 className="font-semibold text-gray-800 mb-2">{service.name}</h4>
+                      
+                      <div className="flex items-center justify-between">
+                        <div className="text-xl font-bold text-green-600">
+                          {service.id === 'custom' ? 'Variável' : `R$ ${service.basePrice.toLocaleString('pt-BR')}`}
+                        </div>
+                        <div className="flex space-x-1">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleEditPredefinedService(service)}
+                            className="border-green-300 text-green-600 hover:bg-green-50"
+                          >
+                            <Edit className="w-3 h-3" />
+                          </Button>
+                          {service.id !== 'custom' && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleDeletePredefinedService(service.id)}
+                              className="border-red-300 text-red-600 hover:bg-red-50"
+                            >
+                              <Trash2 className="w-3 h-3" />
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </TabsContent>
           </Tabs>
         </CardContent>
       </Card>
 
-      {/* Dialog para Editar Serviço */}
+      {/* Dialog para Editar Serviço Cadastrado */}
       <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
         <DialogContent className="max-w-md">
           <DialogHeader>
@@ -801,6 +970,62 @@ export function CashflowManager() {
                   Salvar
                 </Button>
                 <Button variant="outline" onClick={() => setShowEditDialog(false)} className="flex-1">
+                  Cancelar
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog para Editar Serviço Predefinido */}
+      <Dialog open={showPredefinedServiceDialog} onOpenChange={setShowPredefinedServiceDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Editar Serviço Predefinido</DialogTitle>
+            <DialogDescription>
+              Altere os dados do serviço predefinido
+            </DialogDescription>
+          </DialogHeader>
+          {editingPredefinedService && (
+            <div className="space-y-4">
+              <div>
+                <Label>Nome do Serviço</Label>
+                <Input
+                  value={editingPredefinedService.name}
+                  onChange={(e) => setEditingPredefinedService({
+                    ...editingPredefinedService,
+                    name: e.target.value
+                  })}
+                />
+              </div>
+              <div>
+                <Label>Valor Base (R$)</Label>
+                <Input
+                  type="number"
+                  value={editingPredefinedService.basePrice}
+                  onChange={(e) => setEditingPredefinedService({
+                    ...editingPredefinedService,
+                    basePrice: parseFloat(e.target.value) || 0
+                  })}
+                  disabled={editingPredefinedService.id === 'custom'}
+                />
+              </div>
+              <div>
+                <Label>Categoria</Label>
+                <Input
+                  value={editingPredefinedService.category}
+                  onChange={(e) => setEditingPredefinedService({
+                    ...editingPredefinedService,
+                    category: e.target.value
+                  })}
+                />
+              </div>
+              <div className="flex space-x-2">
+                <Button onClick={handleUpdatePredefinedService} className="flex-1">
+                  Salvar
+                </Button>
+                <Button variant="outline" onClick={() => setShowPredefinedServiceDialog(false)} className="flex-1">
                   Cancelar
                 </Button>
               </div>
