@@ -59,6 +59,7 @@ export interface ServiceInstallment {
   amount: number;
   due_date: string;
   paid_date?: string;
+  payment_method?: 'pix' | 'debit' | 'credit' | 'cash';
   status: 'pending' | 'paid' | 'overdue';
   created_at: string;
 }

@@ -182,6 +182,29 @@ export const serviceOperations = {
     return { service, installments: createdInstallments };
   },
 
+  // Update service
+  async update(id: string, updates: Partial<Omit<Service, 'id' | 'created_at'>>) {
+    const { data, error } = await supabase
+      .from('services')
+      .update(updates)
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  },
+
+  // Delete service
+  async delete(id: string) {
+    const { error } = await supabase
+      .from('services')
+      .delete()
+      .eq('id', id);
+
+    if (error) throw error;
+  },
+
   // Get all services with client info and installments
   async getAll(): Promise<ServiceWithInstallments[]> {
     const { data, error } = await supabase
@@ -216,13 +239,27 @@ export const serviceOperations = {
 
 // Installment operations
 export const installmentOperations = {
+  // Update installment
+  async update(id: string, updates: Partial<Omit<ServiceInstallment, 'id' | 'service_id' | 'created_at'>>) {
+    const { data, error } = await supabase
+      .from('service_installments')
+      .update(updates)
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  },
+
   // Mark installment as paid
-  async markAsPaid(installmentId: string) {
+  async markAsPaid(installmentId: string, paymentMethod: 'pix' | 'debit' | 'credit' | 'cash') {
     const { data, error } = await supabase
       .from('service_installments')
       .update({
         status: 'paid',
-        paid_date: new Date().toISOString().split('T')[0]
+        paid_date: new Date().toISOString().split('T')[0],
+        payment_method: paymentMethod
       })
       .eq('id', installmentId)
       .select()
