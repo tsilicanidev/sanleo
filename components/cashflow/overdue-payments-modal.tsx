@@ -58,7 +58,7 @@ Chave: 11.222.333/0001-44
 Dúvidas? Entre em contato conosco!
 📞 (11) 3333-4444
 
-_San Léo - Soluções em Trânsito_`;
+_SanLéo - Soluções em Trânsito_`;
 
   useEffect(() => {
     if (isOpen) {
