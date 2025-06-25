@@ -223,7 +223,7 @@ export function CashflowManager() {
       const serviceData = {
         client_id: selectedClient,
         service_name: serviceName,
-        service_category: selectedServiceData?.category || 'Personalizado',
+        service_category: selectedServiceData?.category || '',
         total_amount: servicePrice,
         installments: installments,
         status: 'active' as const,
