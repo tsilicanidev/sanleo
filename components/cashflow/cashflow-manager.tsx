@@ -851,11 +851,7 @@ export function CashflowManager() {
                         <Badge className={getCategoryColor(service.category)}>
                           {service.category}
                         </Badge>
-                        {service.isCustom && (
-                          <Badge variant="outline" className="bg-blue-100 text-blue-800 border-blue-300">
-                            Personalizado
-                          </Badge>
-                        )}
+
                       </div>
                       
                       <h4 className="font-semibold text-gray-800 mb-2">{service.name}</h4>
