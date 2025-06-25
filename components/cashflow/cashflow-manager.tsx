@@ -586,99 +586,6 @@ export function CashflowManager() {
                     </div>
                   </div>
                 )}
-
-                {/* Plano de Parcelamento */}
-                {installmentPlan.length > 0 && (
-                  <Card className="border-t-4 border-t-yellow-500">
-                    <CardHeader className="bg-gradient-to-r from-yellow-50 to-green-50">
-                      <CardTitle className="flex items-center space-x-2">
-                        <div className="p-2 bg-yellow-100 rounded-full">
-                          <FileText className="w-5 h-5 text-yellow-600" />
-                        </div>
-                        <span className="text-gray-800">Plano de Parcelamento</span>
-                      </CardTitle>
-                      <CardDescription className="text-gray-600">
-                        Configure as datas de vencimento e formas de pagamento
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent className="p-6">
-                      <div className="space-y-4">
-                        {installmentPlan.map((installment, index) => (
-                          <div
-                            key={index}
-                            className="flex items-center justify-between p-4 border-2 border-gray-100 rounded-lg hover:border-yellow-300 hover:bg-yellow-50 transition-all duration-200"
-                          >
-                            <div className="flex items-center space-x-4">
-                              <Badge variant="outline" className="bg-yellow-100 text-yellow-800 border-yellow-300 font-medium">
-                                {installment.installments}ª parcela
-                              </Badge>
-                              <div className="flex items-center space-x-2">
-                                <Calendar className="w-4 h-4 text-gray-500" />
-                                <Input
-                                  type="date"
-                                  value={installment.dueDate}
-                                  onChange={(e) => {
-                                    const newPlan = [...installmentPlan];
-                                    newPlan[index].dueDate = e.target.value;
-                                    setInstallmentPlan(newPlan);
-                                  }}
-                                  className="border-gray-200 focus:border-yellow-400 w-40"
-                                />
-                              </div>
-                              <Select
-                                value={installment.paymentMethod || 'pix'}
-                                onValueChange={(value: 'pix' | 'debit' | 'credit' | 'cash') => {
-                                  const newPlan = [...installmentPlan];
-                                  newPlan[index].paymentMethod = value;
-                                  setInstallmentPlan(newPlan);
-                                }}
-                              >
-                                <SelectTrigger className="w-36 border-gray-200 focus:border-yellow-400">
-                                  <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  {paymentMethods.map((method) => (
-                                    <SelectItem key={method.value} value={method.value}>
-                                      {method.icon} {method.label}
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                            </div>
-                            <div className="text-xl font-bold text-green-600">
-                              R$ {installment.amount.toLocaleString('pt-BR')}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                      
-                      <div className="flex justify-between items-center mt-8 pt-6 border-t-2 border-gray-200">
-                        <span className="text-lg font-semibold text-gray-700">Total do Serviço:</span>
-                        <span className="text-2xl font-bold text-green-600">
-                          R$ {getCurrentServicePrice().toLocaleString('pt-BR')}
-                        </span>
-                      </div>
-
-                      <Button
-                        onClick={handleCreateService}
-                        className="w-full mt-6 sanleo-gradient text-white hover:opacity-90 transition-opacity shadow-lg py-3 text-lg font-semibold"
-                        disabled={!selectedClient || !selectedService || submitting}
-                      >
-                        {submitting ? (
-                          <>
-                            <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                            Criando Serviço...
-                          </>
-                        ) : (
-                          <>
-                            <DollarSign className="w-5 h-5 mr-2" />
-                            Confirmar Serviço
-                          </>
-                        )}
-                      </Button>
-                    </CardContent>
-                  </Card>
-                )}
               </div>
             </TabsContent>
 
@@ -878,19 +785,17 @@ export function CashflowManager() {
                             className="border-green-300 text-green-600 hover:bg-green-50"
                             title="Editar serviço"
                           >
-                            <Edit className="w-3 h-3" />
+                            <Edit className="w-4 h-4" />
                           </Button>
-                          {service.canDelete && (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleDeletePredefinedService(service.id)}
-                              className="border-red-300 text-red-600 hover:bg-red-50"
-                              title="Excluir serviço"
-                            >
-                              <Trash2 className="w-3 h-3" />
-                            </Button>
-                          )}
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleDeletePredefinedService(service.id)}
+                            className="border-red-300 text-red-600 hover:bg-red-50"
+                            title="Excluir serviço"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
                         </div>
                       </div>
                     </CardContent>
@@ -922,6 +827,99 @@ export function CashflowManager() {
           </Tabs>
         </CardContent>
       </Card>
+
+      {/* Plano de Parcelamento */}
+      {installmentPlan.length > 0 && (
+        <Card className="border-t-4 border-t-yellow-500">
+          <CardHeader className="bg-gradient-to-r from-yellow-50 to-green-50">
+            <CardTitle className="flex items-center space-x-2">
+              <div className="p-2 bg-yellow-100 rounded-full">
+                <FileText className="w-5 h-5 text-yellow-600" />
+              </div>
+              <span className="text-gray-800">Plano de Parcelamento</span>
+            </CardTitle>
+            <CardDescription className="text-gray-600">
+              Configure as datas de vencimento e formas de pagamento
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="p-6">
+            <div className="space-y-4">
+              {installmentPlan.map((installment, index) => (
+                <div
+                  key={index}
+                  className="flex items-center justify-between p-4 border-2 border-gray-100 rounded-lg hover:border-yellow-300 hover:bg-yellow-50 transition-all duration-200"
+                >
+                  <div className="flex items-center space-x-4">
+                    <Badge variant="outline" className="bg-yellow-100 text-yellow-800 border-yellow-300 font-medium">
+                      {installment.installments}ª parcela
+                    </Badge>
+                    <div className="flex items-center space-x-2">
+                      <Calendar className="w-4 h-4 text-gray-500" />
+                      <Input
+                        type="date"
+                        value={installment.dueDate}
+                        onChange={(e) => {
+                          const newPlan = [...installmentPlan];
+                          newPlan[index].dueDate = e.target.value;
+                          setInstallmentPlan(newPlan);
+                        }}
+                        className="border-gray-200 focus:border-yellow-400 w-40"
+                      />
+                    </div>
+                    <Select
+                      value={installment.paymentMethod || 'pix'}
+                      onValueChange={(value: 'pix' | 'debit' | 'credit' | 'cash') => {
+                        const newPlan = [...installmentPlan];
+                        newPlan[index].paymentMethod = value;
+                        setInstallmentPlan(newPlan);
+                      }}
+                    >
+                      <SelectTrigger className="w-36 border-gray-200 focus:border-yellow-400">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {paymentMethods.map((method) => (
+                          <SelectItem key={method.value} value={method.value}>
+                            {method.icon} {method.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="text-xl font-bold text-green-600">
+                    R$ {installment.amount.toLocaleString('pt-BR')}
+                  </div>
+                </div>
+              ))}
+            </div>
+            
+            <div className="flex justify-between items-center mt-8 pt-6 border-t-2 border-gray-200">
+              <span className="text-lg font-semibold text-gray-700">Total do Serviço:</span>
+              <span className="text-2xl font-bold text-green-600">
+                R$ {getCurrentServicePrice().toLocaleString('pt-BR')}
+              </span>
+            </div>
+
+            <Button
+              onClick={handleCreateService}
+              className="w-full mt-6 sanleo-gradient text-white hover:opacity-90 transition-opacity shadow-lg py-3 text-lg font-semibold"
+              disabled={!selectedClient || !selectedService || submitting}
+            >
+              {submitting ? (
+                <>
+                  <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                  Criando Serviço...
+                </>
+              ) : (
+                <>
+                  <DollarSign className="w-5 h-5 mr-2" />
+                  Confirmar Serviço
+                </>
+              )}
+            </Button>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Dialog para Editar Serviço Cadastrado */}
       <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
