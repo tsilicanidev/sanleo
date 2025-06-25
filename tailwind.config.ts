@@ -60,7 +60,7 @@ const config: Config = {
           '4': 'hsl(var(--chart-4))',
           '5': 'hsl(var(--chart-5))',
         },
-        // San Léo Brand Colors
+        // SanLéo Brand Colors
         sanleo: {
           red: '#DC2626', // Vermelho vibrante
           yellow: '#FBBF24', // Amarelo dourado
