@@ -290,13 +290,22 @@ export const dashboardOperations = {
       .select('*', { count: 'exact', head: true });
 
     // Get monthly revenue (current month)
-    const currentMonth = new Date().toISOString().slice(0, 7); // YYYY-MM format
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth();
+    
+    // First day of current month
+    const startOfMonth = new Date(currentYear, currentMonth, 1).toISOString().split('T')[0];
+    
+    // First day of next month
+    const startOfNextMonth = new Date(currentYear, currentMonth + 1, 1).toISOString().split('T')[0];
+
     const { data: monthlyRevenue } = await supabase
       .from('service_installments')
       .select('amount')
       .eq('status', 'paid')
-      .gte('paid_date', `${currentMonth}-01`)
-      .lt('paid_date', `${currentMonth}-32`);
+      .gte('paid_date', startOfMonth)
+      .lt('paid_date', startOfNextMonth);
 
     const monthlyTotal = monthlyRevenue?.reduce((sum, item) => sum + Number(item.amount), 0) || 0;
 
