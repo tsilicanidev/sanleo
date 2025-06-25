@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { ClientEditForm } from './client-edit-form';
 import { 
   Users, 
   Search, 
@@ -32,6 +33,8 @@ export function ClientList({ onNewClient }: ClientListProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
   const [loading, setLoading] = useState(true);
+  const [editingClientId, setEditingClientId] = useState<string | null>(null);
+  const [showEditForm, setShowEditForm] = useState(false);
 
   useEffect(() => {
     loadClients();
@@ -106,11 +109,20 @@ export function ClientList({ onNewClient }: ClientListProps) {
   };
 
   const handleEditClient = (clientId: string) => {
-    console.log('Editando cliente:', clientId);
-    // TODO: Implementar edição de cliente
-    toast.info('Funcionalidade em desenvolvimento', {
-      description: 'A edição de clientes será implementada em breve.',
-    });
+    setEditingClientId(clientId);
+    setShowEditForm(true);
+  };
+
+  const handleEditSuccess = () => {
+    setShowEditForm(false);
+    setEditingClientId(null);
+    loadClients(); // Reload the list to show updated data
+    toast.success('Cliente atualizado com sucesso!');
+  };
+
+  const handleEditClose = () => {
+    setShowEditForm(false);
+    setEditingClientId(null);
   };
 
   const handleDeleteClient = async (clientId: string) => {
@@ -339,6 +351,14 @@ export function ClientList({ onNewClient }: ClientListProps) {
           </CardContent>
         </Card>
       )}
+
+      {/* Modal de Edição */}
+      <ClientEditForm
+        isOpen={showEditForm}
+        onClose={handleEditClose}
+        clientId={editingClientId}
+        onSuccess={handleEditSuccess}
+      />
     </div>
   );
 }
