@@ -278,10 +278,10 @@ export const installmentOperations = {
         installment_number,
         amount,
         due_date,
-        services (
+        services!inner (
           service_name,
           installments,
-          clients (
+          clients!inner (
             full_name,
             phone
           )
@@ -297,16 +297,20 @@ export const installmentOperations = {
       const today = new Date();
       const daysOverdue = Math.floor((today.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24));
 
+      // Type assertion to help TypeScript understand the structure
+      const services = item.services as any;
+      const clients = services.clients as any;
+
       return {
         id: item.id,
-        client_name: item.services?.clients?.full_name || 'Cliente não encontrado',
-        client_phone: item.services?.clients?.phone || 'Telefone não informado',
-        service_name: item.services?.service_name || 'Serviço não encontrado',
+        client_name: clients.full_name || 'Cliente não encontrado',
+        client_phone: clients.phone || 'Telefone não informado',
+        service_name: services.service_name || 'Serviço não encontrado',
         amount: item.amount,
         due_date: item.due_date,
         days_overdue: daysOverdue,
         installment: item.installment_number,
-        total_installments: item.services?.installments || 1
+        total_installments: services.installments || 1
       };
     });
   },
