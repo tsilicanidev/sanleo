@@ -38,7 +38,7 @@ export function OverduePaymentsModal({ isOpen, onClose, overdueCount }: OverdueP
   const [sentMessages, setSentMessages] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
 
-  const defaultMessage = `🚨 *COBRANÇA - SAN LEO SOLUÇÕES EM TRÂNSITO* 🚨
+  const defaultMessage = `🚨 *COBRANÇA - SAN LÉO SOLUÇÕES EM TRÂNSITO* 🚨
 
 Olá, {CLIENTE}!
 
