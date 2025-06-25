@@ -60,7 +60,7 @@ export function ServiceCalculator() {
     { id: '4', name: 'DPVAT', basePrice: 156, category: 'Seguro' },
     { id: '5', name: 'Mudança de Categoria', basePrice: 320, category: 'Alteração' },
     { id: '6', name: 'CNH Digital', basePrice: 280, category: 'Habilitação' },
-    { id: 'custom', name: 'Serviço Personalizado', basePrice: 0, category: 'Personalizado' },
+    
   ];
 
   const paymentMethods = [
