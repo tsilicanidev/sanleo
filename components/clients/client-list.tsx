@@ -84,7 +84,8 @@ export function ClientList({ onNewClient }: ClientListProps) {
     return cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
   };
 
-  const formatZipCode = (zipCode: string) => {
+  const formatZipCode = (zipCode: string | null | undefined) => {
+    if (!zipCode) return '';
     return zipCode.replace(/(\d{5})(\d{3})/, '$1-$2');
   };
 
@@ -93,7 +94,15 @@ export function ClientList({ onNewClient }: ClientListProps) {
   };
 
   const getFullAddress = (client: ClientWithDocuments) => {
-    return `${client.street}, ${client.number} - ${client.neighborhood}, ${client.city}/${client.state} - CEP: ${formatZipCode(client.zip_code)}`;
+    const parts = [];
+    
+    if (client.street) parts.push(client.street);
+    if (client.number) parts.push(client.number);
+    if (client.neighborhood) parts.push(`- ${client.neighborhood}`);
+    if (client.city && client.state) parts.push(`${client.city}/${client.state}`);
+    if (client.zip_code) parts.push(`CEP: ${formatZipCode(client.zip_code)}`);
+    
+    return parts.join(', ') || 'Endereço não informado';
   };
 
   const handleEditClient = (clientId: string) => {
