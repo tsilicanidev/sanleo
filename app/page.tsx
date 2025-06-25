@@ -9,6 +9,7 @@ import { OverduePaymentsModal } from '@/components/cashflow/overdue-payments-mod
 import { ClientForm } from '@/components/clients/client-form';
 import { ClientList } from '@/components/clients/client-list';
 import { CashflowManager } from '@/components/cashflow/cashflow-manager';
+import { ReportsManager } from '@/components/reports/reports-manager';
 import { Toaster } from '@/components/ui/sonner';
 import { 
   Users, 
@@ -364,34 +365,7 @@ export default function Dashboard() {
           </TabsContent>
 
           <TabsContent value="reports">
-            <Card className="shadow-lg border-t-4 border-t-purple-500">
-              <CardHeader className="bg-gradient-to-r from-purple-50 to-yellow-50">
-                <CardTitle className="flex items-center space-x-2">
-                  <BarChart3 className="w-5 h-5 text-purple-600" />
-                  <span className="text-gray-800">Relatórios</span>
-                </CardTitle>
-                <CardDescription className="text-gray-600">
-                  Análises e relatórios detalhados do seu negócio
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center py-16">
-                  <div className="p-4 bg-purple-100 rounded-full w-20 h-20 mx-auto mb-6 flex items-center justify-center">
-                    <FileText className="w-10 h-10 text-purple-600" />
-                  </div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-3">
-                    Relatórios Gerenciais
-                  </h3>
-                  <p className="text-gray-600 mb-8 max-w-md mx-auto">
-                    Gere relatórios detalhados de faturamento, inadimplência e performance do negócio.
-                  </p>
-                  <Button className="bg-purple-600 hover:bg-purple-700 text-white shadow-lg px-8 py-3">
-                    <FileText className="w-5 h-5 mr-2" />
-                    Gerar Relatório
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+            <ReportsManager />
           </TabsContent>
         </Tabs>
       </div>
