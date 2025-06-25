@@ -339,7 +339,7 @@ export function CashflowManager() {
       id: `custom_${Date.now()}`,
       name: 'Novo Serviço',
       basePrice: 100,
-      category: 'Personalizado',
+      category: '',
       isCustom: true
     };
 
