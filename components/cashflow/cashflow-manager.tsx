@@ -25,7 +25,8 @@ import {
   AlertTriangle,
   User,
   Search,
-  Settings
+  Settings,
+  X
 } from 'lucide-react';
 import { clientOperations, serviceOperations, installmentOperations } from '@/lib/database';
 import type { Client, ServiceWithInstallments } from '@/lib/supabase';
@@ -62,6 +63,7 @@ interface EditingService {
   basePrice: number;
   category: string;
   isCustom?: boolean;
+  isNew?: boolean;
 }
 
 export function CashflowManager() {
@@ -304,7 +306,8 @@ export function CashflowManager() {
       name: service.name,
       basePrice: service.basePrice,
       category: service.category,
-      isCustom: service.isCustom
+      isCustom: service.isCustom,
+      isNew: false
     });
     setShowPredefinedServiceDialog(true);
   };
@@ -312,36 +315,73 @@ export function CashflowManager() {
   const handleUpdatePredefinedService = () => {
     if (!editingPredefinedService) return;
 
-    const updatedServices = predefinedServices.map(service => 
-      service.id === editingPredefinedService.id 
-        ? {
-            ...service,
-            name: editingPredefinedService.name,
-            basePrice: editingPredefinedService.basePrice,
-            category: editingPredefinedService.category
-          }
-        : service
-    );
+    if (!editingPredefinedService.name.trim()) {
+      toast.error('Nome do serviço é obrigatório');
+      return;
+    }
 
-    savePredefinedServices(updatedServices);
-    toast.success('Serviço predefinido atualizado!');
+    if (editingPredefinedService.basePrice <= 0) {
+      toast.error('Valor deve ser maior que zero');
+      return;
+    }
+
+    if (!editingPredefinedService.category.trim()) {
+      toast.error('Categoria é obrigatória');
+      return;
+    }
+
+    if (editingPredefinedService.isNew) {
+      // Adicionar novo serviço
+      const newService: Service = {
+        id: editingPredefinedService.id,
+        name: editingPredefinedService.name,
+        basePrice: editingPredefinedService.basePrice,
+        category: editingPredefinedService.category,
+        isCustom: true,
+        canDelete: true
+      };
+
+      const updatedServices = [...predefinedServices, newService];
+      savePredefinedServices(updatedServices);
+      toast.success('Novo serviço criado com sucesso!');
+    } else {
+      // Atualizar serviço existente
+      const updatedServices = predefinedServices.map(service => 
+        service.id === editingPredefinedService.id 
+          ? {
+              ...service,
+              name: editingPredefinedService.name,
+              basePrice: editingPredefinedService.basePrice,
+              category: editingPredefinedService.category
+            }
+          : service
+      );
+
+      savePredefinedServices(updatedServices);
+      toast.success('Serviço predefinido atualizado!');
+    }
+
     setShowPredefinedServiceDialog(false);
     setEditingPredefinedService(null);
   };
 
   const handleAddNewPredefinedService = () => {
-    const newService: Service = {
+    const newService: EditingService = {
       id: `custom_${Date.now()}`,
-      name: 'Novo Serviço',
-      basePrice: 100,
-      category: 'Personalizado',
+      name: '',
+      basePrice: 0,
+      category: '',
       isCustom: true,
-      canDelete: true
+      isNew: true
     };
 
-    const updatedServices = [...predefinedServices, newService];
-    savePredefinedServices(updatedServices);
-    handleEditPredefinedService(newService);
+    setEditingPredefinedService(newService);
+    setShowPredefinedServiceDialog(true);
+  };
+
+  const handleCancelPredefinedService = () => {
+    setShowPredefinedServiceDialog(false);
+    setEditingPredefinedService(null);
   };
 
   const handleDeletePredefinedService = (serviceId: string) => {
@@ -966,53 +1006,80 @@ export function CashflowManager() {
         </DialogContent>
       </Dialog>
 
-      {/* Dialog para Editar Serviço Predefinido */}
+      {/* Dialog para Editar/Criar Serviço Predefinido */}
       <Dialog open={showPredefinedServiceDialog} onOpenChange={setShowPredefinedServiceDialog}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Editar Serviço Predefinido</DialogTitle>
+            <DialogTitle className="flex items-center justify-between">
+              <span>
+                {editingPredefinedService?.isNew ? 'Novo Serviço Predefinido' : 'Editar Serviço Predefinido'}
+              </span>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleCancelPredefinedService}
+                className="h-6 w-6 p-0"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </DialogTitle>
             <DialogDescription>
-              Altere os dados do serviço predefinido
+              {editingPredefinedService?.isNew 
+                ? 'Preencha os dados do novo serviço predefinido'
+                : 'Altere os dados do serviço predefinido'
+              }
             </DialogDescription>
           </DialogHeader>
           {editingPredefinedService && (
             <div className="space-y-4">
               <div>
-                <Label>Nome do Serviço</Label>
+                <Label>Nome do Serviço *</Label>
                 <Input
                   value={editingPredefinedService.name}
                   onChange={(e) => setEditingPredefinedService({
                     ...editingPredefinedService,
                     name: e.target.value
                   })}
+                  placeholder="Digite o nome do serviço"
                 />
               </div>
               <div>
-                <Label>Valor Base (R$)</Label>
+                <Label>Valor Base (R$) *</Label>
                 <Input
                   type="number"
+                  min="0"
+                  step="0.01"
                   value={editingPredefinedService.basePrice}
                   onChange={(e) => setEditingPredefinedService({
                     ...editingPredefinedService,
                     basePrice: parseFloat(e.target.value) || 0
                   })}
+                  placeholder="0,00"
                 />
               </div>
               <div>
-                <Label>Categoria</Label>
+                <Label>Categoria *</Label>
                 <Input
                   value={editingPredefinedService.category}
                   onChange={(e) => setEditingPredefinedService({
                     ...editingPredefinedService,
                     category: e.target.value
                   })}
+                  placeholder="Ex: Licenciamento, Habilitação, etc."
                 />
               </div>
-              <div className="flex space-x-2">
-                <Button onClick={handleUpdatePredefinedService} className="flex-1">
-                  Salvar
+              <div className="flex space-x-2 pt-4">
+                <Button 
+                  onClick={handleUpdatePredefinedService} 
+                  className="flex-1 bg-green-500 hover:bg-green-600"
+                >
+                  {editingPredefinedService.isNew ? 'Criar Serviço' : 'Salvar Alterações'}
                 </Button>
-                <Button variant="outline" onClick={() => setShowPredefinedServiceDialog(false)} className="flex-1">
+                <Button 
+                  variant="outline" 
+                  onClick={handleCancelPredefinedService} 
+                  className="flex-1"
+                >
                   Cancelar
                 </Button>
               </div>
