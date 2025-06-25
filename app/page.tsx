@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { OverduePaymentsModal } from '@/components/cashflow/overdue-payments-modal';
 import { ClientForm } from '@/components/clients/client-form';
 import { ClientList } from '@/components/clients/client-list';
-import { ServiceCalculator } from '@/components/cashflow/service-calculator';
+import { CashflowManager } from '@/components/cashflow/cashflow-manager';
 import { Toaster } from '@/components/ui/sonner';
 import { 
   Users, 
@@ -36,7 +36,6 @@ export default function Dashboard() {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [showOverdueModal, setShowOverdueModal] = useState(false);
   const [showClientForm, setShowClientForm] = useState(false);
-  const [showServiceCalculator, setShowServiceCalculator] = useState(false);
   const [stats, setStats] = useState({
     totalClients: 0,
     monthlyRevenue: 0,
@@ -98,11 +97,6 @@ export default function Dashboard() {
   const handleNewClient = () => {
     setShowClientForm(true);
     setActiveTab('clients');
-  };
-
-  const handleNewService = () => {
-    setShowServiceCalculator(true);
-    setActiveTab('cashflow');
   };
 
   const handleClientFormSuccess = () => {
@@ -335,52 +329,7 @@ export default function Dashboard() {
           </TabsContent>
 
           <TabsContent value="cashflow">
-            {showServiceCalculator ? (
-              <div className="space-y-6">
-                <div className="flex items-center justify-between">
-                  <Button
-                    variant="outline"
-                    onClick={() => setShowServiceCalculator(false)}
-                    className="border-gray-300 hover:bg-gray-50"
-                  >
-                    ← Voltar para Fluxo de Caixa
-                  </Button>
-                </div>
-                <ServiceCalculator />
-              </div>
-            ) : (
-              <Card className="shadow-lg border-t-4 border-t-yellow-500">
-                <CardHeader className="bg-gradient-to-r from-yellow-50 to-red-50">
-                  <CardTitle className="flex items-center space-x-2">
-                    <DollarSign className="w-5 h-5 text-yellow-600" />
-                    <span className="text-gray-800">Fluxo de Caixa</span>
-                  </CardTitle>
-                  <CardDescription className="text-gray-600">
-                    Controle financeiro e gestão de pagamentos
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-center py-16">
-                    <div className="p-4 bg-green-100 rounded-full w-20 h-20 mx-auto mb-6 flex items-center justify-center">
-                      <TrendingUp className="w-10 h-10 text-green-600" />
-                    </div>
-                    <h3 className="text-xl font-bold text-gray-900 mb-3">
-                      Controle Financeiro
-                    </h3>
-                    <p className="text-gray-600 mb-8 max-w-md mx-auto">
-                      Gerencie serviços, valores, parcelamentos e envie lembretes automáticos via WhatsApp.
-                    </p>
-                    <Button 
-                      onClick={handleNewService}
-                      className="bg-green-600 hover:bg-green-700 text-white shadow-lg px-8 py-3"
-                    >
-                      <TrendingUp className="w-5 h-5 mr-2" />
-                      Novo Serviço
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
+            <CashflowManager />
           </TabsContent>
 
           <TabsContent value="links">
