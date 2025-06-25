@@ -37,6 +37,7 @@ interface Service {
   basePrice: number;
   category: string;
   isCustom?: boolean;
+  canDelete?: boolean;
 }
 
 interface InstallmentPlan {
@@ -85,16 +86,16 @@ export function CashflowManager() {
 
   // Serviços predefinidos iniciais
   const initialPredefinedServices: Service[] = [
-    { id: '1', name: 'Licenciamento Anual', basePrice: 450, category: 'Licenciamento' },
-    { id: '2', name: 'Transferência de Veículo', basePrice: 890, category: 'Transferência' },
-    { id: '3', name: 'IPVA', basePrice: 1200, category: 'Tributário' },
-    { id: '4', name: 'DPVAT', basePrice: 156, category: 'Seguro' },
-    { id: '5', name: 'Mudança de Categoria', basePrice: 320, category: 'Alteração' },
-    { id: '6', name: 'CNH Digital', basePrice: 280, category: 'Habilitação' },
-    { id: '7', name: 'Renovação CNH', basePrice: 380, category: 'Habilitação' },
-    { id: '8', name: 'Segunda Via CNH', basePrice: 180, category: 'Habilitação' },
-    { id: '9', name: 'Multa de Trânsito', basePrice: 250, category: 'Infrações' },
-    { id: '10', name: 'Recurso de Multa', basePrice: 150, category: 'Infrações' },
+    { id: '1', name: 'Licenciamento Anual', basePrice: 450, category: 'Licenciamento', canDelete: true },
+    { id: '2', name: 'Transferência de Veículo', basePrice: 890, category: 'Transferência', canDelete: true },
+    { id: '3', name: 'IPVA', basePrice: 1200, category: 'Tributário', canDelete: true },
+    { id: '4', name: 'DPVAT', basePrice: 156, category: 'Seguro', canDelete: true },
+    { id: '5', name: 'Mudança de Categoria', basePrice: 320, category: 'Alteração', canDelete: true },
+    { id: '6', name: 'CNH Digital', basePrice: 280, category: 'Habilitação', canDelete: true },
+    { id: '7', name: 'Renovação CNH', basePrice: 380, category: 'Habilitação', canDelete: true },
+    { id: '8', name: 'Segunda Via CNH', basePrice: 180, category: 'Habilitação', canDelete: true },
+    { id: '9', name: 'Multa de Trânsito', basePrice: 250, category: 'Infrações', canDelete: true },
+    { id: '10', name: 'Recurso de Multa', basePrice: 150, category: 'Infrações', canDelete: true },
   ];
 
   const paymentMethods = [
@@ -334,7 +335,8 @@ export function CashflowManager() {
       name: 'Novo Serviço',
       basePrice: 100,
       category: 'Personalizado',
-      isCustom: true
+      isCustom: true,
+      canDelete: true
     };
 
     const updatedServices = [...predefinedServices, newService];
@@ -343,13 +345,24 @@ export function CashflowManager() {
   };
 
   const handleDeletePredefinedService = (serviceId: string) => {
-    if (!confirm('Tem certeza que deseja excluir este serviço predefinido?')) {
+    const serviceToDelete = predefinedServices.find(s => s.id === serviceId);
+    
+    if (!serviceToDelete) return;
+
+    if (!confirm(`Tem certeza que deseja excluir o serviço "${serviceToDelete.name}"?\n\nEsta ação não pode ser desfeita e o serviço não estará mais disponível para seleção.`)) {
       return;
     }
 
     const updatedServices = predefinedServices.filter(service => service.id !== serviceId);
     savePredefinedServices(updatedServices);
-    toast.success('Serviço predefinido excluído!');
+    
+    // Se o serviço excluído estava selecionado, limpar a seleção
+    if (selectedService === serviceId) {
+      setSelectedService('');
+      setInstallmentPlan([]);
+    }
+    
+    toast.success(`Serviço "${serviceToDelete.name}" excluído com sucesso!`);
   };
 
   const handleEditInstallment = (installment: any) => {
@@ -404,7 +417,7 @@ export function CashflowManager() {
       'Alteração': 'bg-purple-100 text-purple-800 border-purple-200',
       'Habilitação': 'bg-orange-100 text-orange-800 border-orange-200',
       'Infrações': 'bg-pink-100 text-pink-800 border-pink-200',
-
+      'Personalizado': 'bg-gray-100 text-gray-800 border-gray-200',
     };
     return colors[category] || 'bg-gray-100 text-gray-800 border-gray-200';
   };
@@ -863,15 +876,17 @@ export function CashflowManager() {
                             size="sm"
                             onClick={() => handleEditPredefinedService(service)}
                             className="border-green-300 text-green-600 hover:bg-green-50"
+                            title="Editar serviço"
                           >
                             <Edit className="w-3 h-3" />
                           </Button>
-                          {service.isCustom && (
+                          {service.canDelete && (
                             <Button
                               variant="outline"
                               size="sm"
                               onClick={() => handleDeletePredefinedService(service.id)}
                               className="border-red-300 text-red-600 hover:bg-red-50"
+                              title="Excluir serviço"
                             >
                               <Trash2 className="w-3 h-3" />
                             </Button>
@@ -882,6 +897,27 @@ export function CashflowManager() {
                   </Card>
                 ))}
               </div>
+
+              {predefinedServices.length === 0 && (
+                <div className="text-center py-16">
+                  <div className="p-4 bg-gray-100 rounded-full w-20 h-20 mx-auto mb-6 flex items-center justify-center">
+                    <Settings className="w-10 h-10 text-gray-400" />
+                  </div>
+                  <h3 className="text-xl font-bold text-gray-900 mb-3">
+                    Nenhum serviço predefinido
+                  </h3>
+                  <p className="text-gray-600 mb-8 max-w-md mx-auto">
+                    Comece criando seu primeiro serviço predefinido.
+                  </p>
+                  <Button 
+                    onClick={handleAddNewPredefinedService}
+                    className="bg-green-500 hover:bg-green-600 text-white shadow-lg"
+                  >
+                    <Plus className="w-5 h-5 mr-2" />
+                    Criar Primeiro Serviço
+                  </Button>
+                </div>
+              )}
             </TabsContent>
           </Tabs>
         </CardContent>
