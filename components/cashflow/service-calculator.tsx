@@ -369,32 +369,7 @@ export function ServiceCalculator() {
             </div>
           </div>
 
-          {/* Campos para Serviço Personalizado */}
-          {isCustomService && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 bg-gray-50 rounded-lg border-2 border-gray-200">
-              <div className="space-y-3">
-                <Label className="text-gray-700 font-medium">Nome do Serviço</Label>
-                <Input
-                  value={customServiceName}
-                  onChange={(e) => setCustomServiceName(e.target.value)}
-                  placeholder="Digite o nome do serviço"
-                  className="border-2 border-gray-200 focus:border-red-400"
-                />
-              </div>
-              <div className="space-y-3">
-                <Label className="text-gray-700 font-medium">Valor (R$)</Label>
-                <Input
-                  type="number"
-                  value={customServicePrice}
-                  onChange={(e) => setCustomServicePrice(e.target.value)}
-                  placeholder="0,00"
-                  min="0"
-                  step="0.01"
-                  className="border-2 border-gray-200 focus:border-red-400"
-                />
-              </div>
-            </div>
-          )}
+      
 
           {/* Valor e Parcelamento */}
           {(selectedServiceData || isCustomService) && getCurrentServicePrice() > 0 && (
