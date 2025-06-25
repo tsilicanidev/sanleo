@@ -97,7 +97,8 @@ export function CashflowManager() {
     { id: '8', name: 'Segunda Via CNH', basePrice: 180, category: 'Habilitação' },
     { id: '9', name: 'Multa de Trânsito', basePrice: 250, category: 'Infrações' },
     { id: '10', name: 'Recurso de Multa', basePrice: 150, category: 'Infrações' },
-     ];
+    { id: 'custom', name: 'Serviço Personalizado', basePrice: 0, category: 'Personalizado' },
+  ];
 
   const paymentMethods = [
     { value: 'pix', label: 'PIX', icon: '💰', color: 'bg-green-100 text-green-800' },
@@ -175,7 +176,12 @@ export function CashflowManager() {
     return selectedServiceData?.basePrice || 0;
   };
 
-
+  const getCurrentServiceName = () => {
+    if (isCustomService) {
+      return customServiceName || 'Serviço Personalizado';
+    }
+    return selectedServiceData?.name || '';
+  };
 
   const generateInstallmentPlan = () => {
     const baseAmount = getCurrentServicePrice();
@@ -223,7 +229,7 @@ export function CashflowManager() {
       const serviceData = {
         client_id: selectedClient,
         service_name: serviceName,
-        service_category: selectedServiceData?.category || '',
+        service_category: selectedServiceData?.category || 'Personalizado',
         total_amount: servicePrice,
         installments: installments,
         status: 'active' as const,
@@ -339,7 +345,7 @@ export function CashflowManager() {
       id: `custom_${Date.now()}`,
       name: 'Novo Serviço',
       basePrice: 100,
-      category: '',
+      category: 'Personalizado',
       isCustom: true
     };
 
@@ -415,7 +421,7 @@ export function CashflowManager() {
       'Alteração': 'bg-purple-100 text-purple-800 border-purple-200',
       'Habilitação': 'bg-orange-100 text-orange-800 border-orange-200',
       'Infrações': 'bg-pink-100 text-pink-800 border-pink-200',
-
+      'Personalizado': 'bg-gray-100 text-gray-800 border-gray-200',
     };
     return colors[category] || 'bg-gray-100 text-gray-800 border-gray-200';
   };
@@ -474,7 +480,14 @@ export function CashflowManager() {
               <TabsTrigger 
                 value="new-service"
                 className="data-[state=active]:bg-red-500 data-[state=active]:text-white"
-                            >
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Novo Serviço
+              </TabsTrigger>
+              <TabsTrigger 
+                value="manage-services"
+                className="data-[state=active]:bg-blue-500 data-[state=active]:text-white"
+              >
                 <FileText className="w-4 h-4 mr-2" />
                 Serviços Cadastrados ({services.length})
               </TabsTrigger>
@@ -482,7 +495,6 @@ export function CashflowManager() {
                 value="predefined-services"
                 className="data-[state=active]:bg-green-500 data-[state=active]:text-white"
               >
-                
                 <Settings className="w-4 h-4 mr-2" />
                 Gerenciar Serviços ({predefinedServices.length})
               </TabsTrigger>
@@ -533,7 +545,34 @@ export function CashflowManager() {
                   </div>
                 </div>
 
-                                {/* Valor e Parcelamento */}
+                {/* Campos para Serviço Personalizado */}
+                {isCustomService && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 bg-gray-50 rounded-lg border-2 border-gray-200">
+                    <div className="space-y-3">
+                      <Label className="text-gray-700 font-medium">Nome do Serviço *</Label>
+                      <Input
+                        value={customServiceName}
+                        onChange={(e) => setCustomServiceName(e.target.value)}
+                        placeholder="Digite o nome do serviço"
+                        className="border-2 border-gray-200 focus:border-red-400"
+                      />
+                    </div>
+                    <div className="space-y-3">
+                      <Label className="text-gray-700 font-medium">Valor (R$) *</Label>
+                      <Input
+                        type="number"
+                        value={customServicePrice}
+                        onChange={(e) => setCustomServicePrice(e.target.value)}
+                        placeholder="0,00"
+                        min="0"
+                        step="0.01"
+                        className="border-2 border-gray-200 focus:border-red-400"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* Valor e Parcelamento */}
                 {(selectedServiceData || isCustomService) && getCurrentServicePrice() > 0 && (
                   <div className="space-y-6">
                     <div className="flex items-center justify-between p-6 bg-gradient-to-r from-red-50 to-yellow-50 rounded-lg border-2 border-red-200">
@@ -543,8 +582,8 @@ export function CashflowManager() {
                         </div>
                         <div>
                           <h4 className="font-semibold text-gray-800 text-lg">{getCurrentServiceName()}</h4>
-                          <Badge className={getCategoryColor(selectedServiceData?.category || '')}>
-                            {selectedServiceData?.category || ''}
+                          <Badge className={getCategoryColor(selectedServiceData?.category || 'Personalizado')}>
+                            {selectedServiceData?.category || 'Personalizado'}
                           </Badge>
                         </div>
                       </div>
@@ -851,7 +890,11 @@ export function CashflowManager() {
                         <Badge className={getCategoryColor(service.category)}>
                           {service.category}
                         </Badge>
-
+                        {service.isCustom && (
+                          <Badge variant="outline" className="bg-blue-100 text-blue-800 border-blue-300">
+                            Personalizado
+                          </Badge>
+                        )}
                       </div>
                       
                       <h4 className="font-semibold text-gray-800 mb-2">{service.name}</h4>
@@ -869,7 +912,7 @@ export function CashflowManager() {
                           >
                             <Edit className="w-3 h-3" />
                           </Button>
-                          {service.id !== 'custom' && (
+                          {service.id !== 'custom' && !service.isCustom && (
                             <Button
                               variant="outline"
                               size="sm"
